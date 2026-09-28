@@ -83,7 +83,7 @@ func (c *Client) QueryISPMetrics(ctx context.Context, mtype string, body json.Ra
 
 // SDWANConfigs lists SD-WAN configurations.
 func (c *Client) SDWANConfigs(ctx context.Context, all bool, limit int) ([]json.RawMessage, error) {
-	return c.listCursor(ctx, "/ea/sd-wan/configs", nil, all, limit)
+	return c.listCursor(ctx, "/ea/sd-wan-configs", nil, all, limit)
 }
 
 // SDWANConfig fetches a single SD-WAN configuration by id.
@@ -91,7 +91,7 @@ func (c *Client) SDWANConfig(ctx context.Context, id string) (json.RawMessage, e
 	if err := requireArg("config id", id); err != nil {
 		return nil, err
 	}
-	b, err := c.do(ctx, http.MethodGet, "/ea/sd-wan/configs/"+url.PathEscape(id), nil, nil)
+	b, err := c.do(ctx, http.MethodGet, "/ea/sd-wan-configs/"+url.PathEscape(id), nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (c *Client) SDWANStatus(ctx context.Context, id string) (json.RawMessage, e
 	if err := requireArg("config id", id); err != nil {
 		return nil, err
 	}
-	b, err := c.do(ctx, http.MethodGet, "/ea/sd-wan/configs/"+url.PathEscape(id)+"/status", nil, nil)
+	b, err := c.do(ctx, http.MethodGet, "/ea/sd-wan-configs/"+url.PathEscape(id)+"/status", nil, nil)
 	if err != nil {
 		return nil, err
 	}

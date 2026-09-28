@@ -1,8 +1,8 @@
 # UniFi typed resources and `api` passthrough reference
 
 Load this when the user wants something beyond the curated
-sites/devices/clients/vouchers commands — firewall, DNS, networks/VLANs, WLANs,
-ACLs, port forwarding, traffic routes, RADIUS, WANs, VPN servers, etc.
+sites/devices/clients/vouchers commands — firewall, DNS, networks/VLANs, WiFi
+broadcasts (SSIDs), ACLs, RADIUS, WANs, VPN servers, etc.
 
 ## `api` — universal passthrough for ANY endpoint
 
@@ -20,8 +20,8 @@ unifi api <METHOD> <path> [--data <json>] [--data-file <file>] [--query k=v]...
 ```
 unifi api GET /sites/{site}/firewall/policies
 unifi api GET /sites/{site}/clients --query limit=50
-unifi api POST /sites/{site}/networks --data '{"name":"IoT","vlan":40}' --yes
-unifi api DELETE /sites/{site}/port-forwards/<id> --yes
+unifi api POST /sites/{site}/networks --yes --data '{"management":"GATEWAY","name":"IoT","enabled":true,"vlanId":40,"cellularBackupEnabled":false,"internetAccessEnabled":true,"isolationEnabled":false,"ipv4Configuration":{"autoScaleEnabled":false,"hostIpAddress":"192.168.40.1","prefixLength":24}}'  # GATEWAY-managed VLAN
+unifi api DELETE /sites/{site}/wifi/broadcasts/<id> --yes
 ```
 
 ## Typed resource commands (prefer when available)
@@ -30,7 +30,9 @@ Forms: `unifi <group> list` · `get <id>` · `create --data '<json>'` ·
 `update <id> --data '<json>'` · `delete <id>`.
 For firewall the sub comes first: `unifi firewall <zones|policies> <action> [id]`.
 
-Paths verified against UniFi Network application v10.4.57.
+Paths match the OpenAPI spec of UniFi Network application v10.6.106. The CLI works on
+every v10 version (10.0.162 to 10.6.106). `firewall policies` and `dns` need 10.1.84 or
+later, because 10.0.162 has no such endpoints.
 
 | Group | Path | Ops |
 |---|---|---|
@@ -40,14 +42,19 @@ Paths verified against UniFi Network application v10.4.57.
 | `acl-rules` | `/sites/{site}/acl-rules` | list/get/create/update/delete |
 | `dns` | `/sites/{site}/dns/policies` | list/get/create/update/delete |
 | `traffic-lists` | `/sites/{site}/traffic-matching-lists` | list/get/create/update/delete |
-| `wans` | `/sites/{site}/wans` | list/get/create/update/delete |
-| `vpn-servers` | `/sites/{site}/vpn/servers` | list/get/create/update/delete |
-| `radius-profiles` | `/sites/{site}/radius/profiles` | list/get/create/update/delete |
-| `device-tags` | `/sites/{site}/device-tags` | list/get/create/update/delete |
+| `wans` | `/sites/{site}/wans` | list |
+| `vpn-servers` | `/sites/{site}/vpn/servers` | list |
+| `radius-profiles` | `/sites/{site}/radius/profiles` | list |
+| `device-tags` | `/sites/{site}/device-tags` | list |
 | `countries` | `/countries` (not site-scoped) | list |
 
-No typed command on v10.4.57 (use the `api` passthrough): `wlans` (WiFi/SSIDs) →
-`unifi api GET /sites/{site}/wlans`; `port-forwards`; `traffic-routes`.
+`wans`, `vpn-servers`, `radius-profiles`, `device-tags`, and `countries` are list-only.
+
+No typed command on v10.6.106 (use the `api` passthrough): WiFi broadcasts (SSIDs)
+→ `unifi api GET /sites/{site}/wifi/broadcasts`. Also `/dpi/applications`,
+`/dpi/categories`, `/pending-devices`, `/sites/{site}/switching/{lags,mc-lag-domains,switch-stacks}`,
+`/sites/{site}/vpn/site-to-site-tunnels`, and `.../{acl-rules,firewall/policies}/ordering`.
+This version has no `wlans`, `port-forwards`, or `traffic-routes` endpoint.
 
 Paths can vary by firmware. The console's **Settings → Integrations** is the
 source of truth; if a typed path is wrong, fall back to `unifi api <METHOD> <path>`.
@@ -72,9 +79,9 @@ Read-only · cursor pagination (`--all` follows `nextToken`, `--limit` = pageSiz
 | `site-manager devices list` | GET | `/v1/devices` (`?hostIds=`) |
 | `site-manager isp-metrics get <5m\|1h>` | GET | `/ea/isp-metrics/{type}` |
 | `site-manager isp-metrics query <5m\|1h>` | POST | `/ea/isp-metrics/{type}/query` |
-| `site-manager sdwan list` | GET | `/ea/sd-wan/configs` |
-| `site-manager sdwan get <id>` | GET | `/ea/sd-wan/configs/{id}` |
-| `site-manager sdwan status <id>` | GET | `/ea/sd-wan/configs/{id}/status` |
+| `site-manager sdwan list` | GET | `/ea/sd-wan-configs` |
+| `site-manager sdwan get <id>` | GET | `/ea/sd-wan-configs/{id}` |
+| `site-manager sdwan status <id>` | GET | `/ea/sd-wan-configs/{id}/status` |
 
 Escape hatch: `unifi site-manager api <METHOD> <path>` (e.g.
 `unifi site-manager api GET /v1/hosts`). Like the local `api` command, a non-GET

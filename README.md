@@ -341,7 +341,7 @@ unifi clients get 66b1e2f4a1b2c3d4e5f60003
 unifi clients authorize <client-id> --yes [flags]
 ```
 
-Authorizes a guest client (`AUTHORIZE_GUEST` action). Requires `--yes`.
+Authorizes a guest client (`AUTHORIZE_GUEST_ACCESS` action). Requires `--yes`.
 
 ```sh
 unifi clients authorize 66b1e2f4a1b2c3d4e5f60003 --yes
@@ -371,7 +371,7 @@ unifi vouchers create [--name N] [--count C] [--minutes M] [--quota-mb MB] [--gu
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--name` | Voucher name | — |
+| `--name` | Voucher name (the API requires one) | `Voucher` |
 | `--count` | Number of vouchers to create | `1` |
 | `--minutes` | Time limit in minutes | `1440` (24 h) |
 | `--quota-mb` | Data usage limit in MB | unlimited |
@@ -442,7 +442,7 @@ Supports `--all` (auto-paginate) and `--limit N`. Cloud commands are read-only a
 
 Beyond the curated `sites`/`devices`/`clients`/`vouchers` commands above, `unifi` exposes **every** UniFi Network Integration API endpoint through two complementary mechanisms:
 
-1. **Typed resource commands** — a convenience layer for the common, well-known resource groups (networks, WLANs, firewall, DNS, etc.). Consistent `list`/`get`/`create`/`update`/`delete` verbs, friendly table output, and automatic `{site}` resolution.
+1. **Typed resource commands** — a convenience layer for the common, well-known resource groups (networks, firewall, DNS, etc.). Consistent `list`/`get`/`create`/`update`/`delete` verbs, friendly table output, and automatic `{site}` resolution.
 2. **The `api` passthrough** — a universal catch-all that issues a raw request to *any* path. Use it for anything not covered by a typed command, including undocumented or future-firmware endpoints. It always works because you supply the exact method and path.
 
 > All `create`/`update`/`delete` typed commands, and **any** non-`GET` `api` call, require the `--yes` flag.
@@ -465,9 +465,11 @@ unifi api <METHOD> <path> [--data <json>] [--data-file <file|->] [--query k=v]..
 # GET firewall policies for the resolved site
 unifi api GET /sites/{site}/firewall/policies
 
-# Create a network (POST with an inline body) — requires --yes
+# Create a gateway-managed network (POST with an inline body) — requires --yes.
+# The body varies by `management` type (GATEWAY, SWITCH, UNMANAGED); on
+# versions before 10.3.58, GATEWAY also requires `mdnsForwardingEnabled`.
 unifi api POST /sites/{site}/networks \
-  --data '{"name":"IoT","purpose":"corporate","vlan":40}' --yes
+  --data '{"management":"GATEWAY","name":"IoT","enabled":true,"vlanId":40,"cellularBackupEnabled":false,"internetAccessEnabled":true,"isolationEnabled":false,"ipv4Configuration":{"autoScaleEnabled":false,"hostIpAddress":"192.168.40.1","prefixLength":24}}' --yes
 
 # Delete a DNS policy — requires --yes
 unifi api DELETE /sites/{site}/dns/policies/66b1e2f4a1b2c3d4e5f6abcd --yes
@@ -478,13 +480,13 @@ unifi api GET /sites/{site}/clients --query limit=50 --query offset=0
 # Read the body from a file (or stdin with -)
 unifi api PUT /sites/{site}/networks/<id> --data-file ./network.json --yes
 
-# Reach a resource that has no typed command on your firmware (e.g. WLANs)
-unifi api GET /sites/{site}/wlans
+# Reach a resource that has no typed command (e.g. WiFi broadcasts / SSIDs)
+unifi api GET /sites/{site}/wifi/broadcasts
 ```
 
 ### Typed resource groups
 
-Each group supports `list`, `get`, `create`, `update`, and `delete` unless noted otherwise. All paths are site-scoped (`/sites/{site}/...`) except `countries`. Paths below are verified against UniFi Network application **v10.4.57**.
+Each group supports `list`, `get`, `create`, `update`, and `delete` unless the table says otherwise. All paths are site-scoped (`/sites/{site}/...`) except `countries`. Paths below match the OpenAPI spec of UniFi Network application **v10.6.106**. The CLI works on every v10 version from **10.0.162** to **10.6.106**, except that `firewall policies` and `dns` need **10.1.84** or later (10.0.162 has no such endpoints).
 
 | Group | Path | Ops |
 |-------|------|-----|
@@ -494,13 +496,13 @@ Each group supports `list`, `get`, `create`, `update`, and `delete` unless noted
 | `acl-rules` | `/sites/{site}/acl-rules` | list, get, create, update, delete |
 | `dns` | `/sites/{site}/dns/policies` | list, get, create, update, delete |
 | `traffic-lists` | `/sites/{site}/traffic-matching-lists` | list, get, create, update, delete |
-| `wans` | `/sites/{site}/wans` | list, get, create, update, delete |
-| `vpn-servers` | `/sites/{site}/vpn/servers` | list, get, create, update, delete |
-| `radius-profiles` | `/sites/{site}/radius/profiles` | list, get, create, update, delete |
-| `device-tags` | `/sites/{site}/device-tags` | list, get, create, update, delete |
+| `wans` | `/sites/{site}/wans` | list |
+| `vpn-servers` | `/sites/{site}/vpn/servers` | list |
+| `radius-profiles` | `/sites/{site}/radius/profiles` | list |
+| `device-tags` | `/sites/{site}/device-tags` | list |
 | `countries` | `/countries` | list |
 
-> **Not yet in the integration API on all firmware:** `wlans` (WiFi/SSIDs), `port-forwards`, and `traffic-routes` returned 404 on v10.4.57 and so have no typed command. If your firmware exposes them, reach them via the `api` passthrough — e.g. `unifi api GET /sites/{site}/wlans`.
+> **No typed command:** WiFi broadcasts (`/sites/{site}/wifi/broadcasts`), DPI (`/dpi/applications`, `/dpi/categories`), pending devices (`/pending-devices`), switching (`/sites/{site}/switching/lags`, `mc-lag-domains`, `switch-stacks`), site-to-site tunnels (`/sites/{site}/vpn/site-to-site-tunnels`), ACL and firewall-policy `ordering`, and network `references`. Reach them via the `api` passthrough, for example `unifi api GET /sites/{site}/wifi/broadcasts`. The v10.6.106 API has no `wlans`, `port-forwards`, or `traffic-routes` endpoint.
 
 Generic command forms:
 

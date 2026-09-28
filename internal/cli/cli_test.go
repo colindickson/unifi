@@ -568,7 +568,7 @@ func TestClientAuthorize(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("code=%d stderr=%s", code, errb)
 	}
-	if !f.clientActionCalled || f.clientActionArgs[2] != "AUTHORIZE_GUEST" {
+	if !f.clientActionCalled || f.clientActionArgs[2] != "AUTHORIZE_GUEST_ACCESS" {
 		t.Errorf("client action wrong: %+v", f.clientActionArgs)
 	}
 }
@@ -604,6 +604,31 @@ func TestVoucherCreate(t *testing.T) {
 	}
 	if f2.createVoucherReq.AuthorizedGuestLimit == nil || *f2.createVoucherReq.AuthorizedGuestLimit != 2 {
 		t.Errorf("AuthorizedGuestLimit want 2, got %v", f2.createVoucherReq.AuthorizedGuestLimit)
+	}
+}
+
+func TestVoucherCreateDefaultName(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("UNIFI_HOST", "h")
+	t.Setenv("UNIFI_API_KEY", "k")
+	t.Setenv("UNIFI_SITE", "s1")
+
+	f := &fakeAPI{objRaw: json.RawMessage(`{}`)}
+	withFakeAPI(t, f)
+	if code, _, errb := run("vouchers", "create", "-o", "json", "--yes"); code != 0 {
+		t.Fatalf("code=%d stderr=%s", code, errb)
+	}
+	if f.createVoucherReq.Name == "" {
+		t.Error("name is required by the API; want a non-empty default")
+	}
+
+	f2 := &fakeAPI{objRaw: json.RawMessage(`{}`)}
+	withFakeAPI(t, f2)
+	if code, _, errb := run("vouchers", "create", "--name", "Day Pass", "-o", "json", "--yes"); code != 0 {
+		t.Fatalf("code=%d stderr=%s", code, errb)
+	}
+	if f2.createVoucherReq.Name != "Day Pass" {
+		t.Errorf("Name = %q, want %q", f2.createVoucherReq.Name, "Day Pass")
 	}
 }
 

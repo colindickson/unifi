@@ -14,6 +14,8 @@ type resourceOps struct{ list, get, create, update, delete bool }
 // allOps enables every operation.
 var allOps = resourceOps{list: true, get: true, create: true, update: true, delete: true}
 
+var listOnly = resourceOps{list: true}
+
 // resourceDef declares a typed REST resource exposed as a CLI command. Paths
 // are templates with a {site} token where the resource is site-scoped. These
 // are the single source of truth for typed resource paths; the universal `api`
@@ -25,11 +27,9 @@ type resourceDef struct {
 	ops   resourceOps
 }
 
-// Paths verified against a live UniFi Network console (application v10.4.57).
-// Resources not yet exposed by this firmware's integration API (e.g. WLANs,
-// port forwards, traffic routes) are intentionally omitted as typed commands —
-// they remain reachable via the universal `api` passthrough if a future
-// firmware adds them. Use `unifi api GET <path>` to probe new resources.
+// Paths verified against a live UniFi Network console (application v10.6.106, per its OpenAPI spec).
+// Resources without a typed command (e.g. wifi/broadcasts, DPI, switching)
+// remain reachable via the universal `api` passthrough. Use `unifi api GET <path>` to probe new resources.
 var resources = []resourceDef{
 	{group: "networks", path: "/sites/{site}/networks", ops: allOps},
 	{group: "firewall", sub: "zones", path: "/sites/{site}/firewall/zones", ops: allOps},
@@ -37,11 +37,11 @@ var resources = []resourceDef{
 	{group: "acl-rules", path: "/sites/{site}/acl-rules", ops: allOps},
 	{group: "dns", path: "/sites/{site}/dns/policies", ops: allOps},
 	{group: "traffic-lists", path: "/sites/{site}/traffic-matching-lists", ops: allOps},
-	{group: "wans", path: "/sites/{site}/wans", ops: allOps},
-	{group: "vpn-servers", path: "/sites/{site}/vpn/servers", ops: allOps},
-	{group: "radius-profiles", path: "/sites/{site}/radius/profiles", ops: allOps},
-	{group: "device-tags", path: "/sites/{site}/device-tags", ops: allOps},
-	{group: "countries", path: "/countries", ops: resourceOps{list: true}},
+	{group: "wans", path: "/sites/{site}/wans", ops: listOnly},
+	{group: "vpn-servers", path: "/sites/{site}/vpn/servers", ops: listOnly},
+	{group: "radius-profiles", path: "/sites/{site}/radius/profiles", ops: listOnly},
+	{group: "device-tags", path: "/sites/{site}/device-tags", ops: listOnly},
+	{group: "countries", path: "/countries", ops: listOnly},
 }
 
 // findResource returns the resourceDef matching group and sub, or nil.

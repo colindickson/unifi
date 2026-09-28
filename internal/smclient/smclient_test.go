@@ -188,7 +188,7 @@ func TestDo_429_ReturnsClientAPIError(t *testing.T) {
 	defer srv.Close()
 
 	c := newTestClient(srv.URL)
-	_, err := c.Do(context.Background(), http.MethodGet, "/ea/sd-wan/configs", nil, nil)
+	_, err := c.Do(context.Background(), http.MethodGet, "/ea/sd-wan-configs", nil, nil)
 	apiErr, ok := err.(*client.APIError)
 	if !ok {
 		t.Fatalf("error type = %T, want *client.APIError", err)
@@ -249,7 +249,7 @@ func TestHosts_Sites_UseCorrectPaths(t *testing.T) {
 	}{
 		{"hosts", func(c *Client) ([]json.RawMessage, error) { return c.Hosts(context.Background(), false, 25) }, "/v1/hosts"},
 		{"sites", func(c *Client) ([]json.RawMessage, error) { return c.Sites(context.Background(), false, 25) }, "/v1/sites"},
-		{"sdwan", func(c *Client) ([]json.RawMessage, error) { return c.SDWANConfigs(context.Background(), false, 25) }, "/ea/sd-wan/configs"},
+		{"sdwan", func(c *Client) ([]json.RawMessage, error) { return c.SDWANConfigs(context.Background(), false, 25) }, "/ea/sd-wan-configs"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var gotPath string
@@ -375,9 +375,9 @@ func TestSDWANConfigAndStatus_Paths(t *testing.T) {
 		want    string
 		escaped bool
 	}{
-		{"config", func(c *Client) (json.RawMessage, error) { return c.SDWANConfig(context.Background(), "cfg1") }, "/ea/sd-wan/configs/cfg1", false},
-		{"status", func(c *Client) (json.RawMessage, error) { return c.SDWANStatus(context.Background(), "cfg1") }, "/ea/sd-wan/configs/cfg1/status", false},
-		{"config-escaped", func(c *Client) (json.RawMessage, error) { return c.SDWANConfig(context.Background(), "cfg 1") }, "/ea/sd-wan/configs/cfg%201", true},
+		{"config", func(c *Client) (json.RawMessage, error) { return c.SDWANConfig(context.Background(), "cfg1") }, "/ea/sd-wan-configs/cfg1", false},
+		{"status", func(c *Client) (json.RawMessage, error) { return c.SDWANStatus(context.Background(), "cfg1") }, "/ea/sd-wan-configs/cfg1/status", false},
+		{"config-escaped", func(c *Client) (json.RawMessage, error) { return c.SDWANConfig(context.Background(), "cfg 1") }, "/ea/sd-wan-configs/cfg%201", true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var gotPath string

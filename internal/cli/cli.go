@@ -353,7 +353,7 @@ Site Manager (cloud) — account-wide API at api.ui.com (alias: sm, read-only):
   site-manager api <method> <path>        Cloud passthrough
   Cloud commands need only an API key (no --host/--site).
 
-Resources (list/get/create/update/delete; writes require --yes):
+Resources (list/get/create/update/delete unless noted; writes require --yes):
   networks <action> [id]    /sites/{site}/networks
   firewall zones <action>   /sites/{site}/firewall/zones
   firewall policies <action> /sites/{site}/firewall/policies
@@ -366,8 +366,9 @@ Resources (list/get/create/update/delete; writes require --yes):
   device-tags <action>      /sites/{site}/device-tags
   countries list            /countries (list only)
 
-  Resources not yet in the integration API on some firmware (e.g. wlans,
-  port-forwards, traffic-routes) are reachable via: unifi api GET <path>
+  wans, vpn-servers, radius-profiles, and device-tags support list only.
+  Endpoints without a typed command (e.g. wifi/broadcasts, dpi, switching)
+  are reachable via: unifi api GET <path>
 
   For resources, create/update read the JSON body from --data or --data-file.
 

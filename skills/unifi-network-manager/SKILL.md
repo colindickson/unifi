@@ -1,6 +1,6 @@
 ---
 name: unifi-network-manager
-description: Use when the user wants to inspect or manage a UniFi / Ubiquiti network — listing sites, devices (access points, switches, gateways), WiFi clients, guest vouchers, restarting a device, cycling a PoE port, authorizing a guest, or configuring firewall zones/policies, DNS, VLANs, WLANs/SSIDs, ACL rules, port forwarding, traffic routes, RADIUS profiles, or WAN interfaces; ALSO covers the account-wide UniFi Site Manager cloud API (api.ui.com) for listing hosts/consoles, cross-site devices, ISP metrics, and SD-WAN configs. Triggers on UniFi, Ubiquiti, access point, WiFi, PoE, firewall, VLAN, SSID, ACL, RADIUS, Site Manager, hosts, ISP metrics, SD-WAN.
+description: Use when the user wants to inspect or manage a UniFi / Ubiquiti network — listing sites, devices (access points, switches, gateways), WiFi clients, guest vouchers, restarting a device, cycling a PoE port, authorizing a guest, or configuring firewall zones/policies, DNS, VLANs, WiFi broadcasts/SSIDs, ACL rules, RADIUS profiles, or WAN interfaces; ALSO covers the account-wide UniFi Site Manager cloud API (api.ui.com) for listing hosts/consoles, cross-site devices, ISP metrics, and SD-WAN configs. Triggers on UniFi, Ubiquiti, access point, WiFi, PoE, firewall, VLAN, SSID, ACL, RADIUS, Site Manager, hosts, ISP metrics, SD-WAN.
 ---
 
 # UniFi Network Manager (CLI)
@@ -75,7 +75,7 @@ Warn the user: **device restart** briefly drops all clients on that device;
 
 ## Beyond the curated commands
 
-For firewall, DNS, networks/VLANs, WLANs, ACLs, port forwarding, traffic routes,
+For firewall, DNS, networks/VLANs, WiFi broadcasts (SSIDs), ACLs,
 RADIUS, WANs, VPN servers, or any other endpoint, the CLI reaches EVERY endpoint
 via typed resource commands or the `api` passthrough. See `resources.md` in this
 skill directory for the full path table and `api` usage.
